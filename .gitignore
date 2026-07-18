@@ -1,0 +1,16 @@
+# Local Codex runtime output
+pet-sound-mod/
+codex-overlay/
+logs/
+backups/
+config.json
+
+# Temporary patch/build output
+*.tmp
+*.bak
+*.log
+
+# OS/editor noise
+Thumbs.db
+.DS_Store
+.vscode/
