@@ -6,6 +6,8 @@
 
 它不是某个特定桌宠包，也不包含任何 Codex 本体文件。它会基于用户本机已经安装的 Codex 创建一个可写 overlay，并在桌宠点击、拖动、互动状态变化和本地任务开始时播放音效。
 
+当前版本仅支持 Windows，macOS 和 Linux 尚未适配。
+
 核心特点：
 
 - 支持任意 Codex 自定义桌宠。
@@ -24,6 +26,8 @@ https://github.com/lirunbing491-netizen/codex-pet-sound-mod
 I released Codex Pet Sound Mod, a generic interaction sound mod for Codex custom desktop pets.
 
 It is not tied to any specific pet and does not redistribute Codex itself. It builds a writable overlay from the Codex installation already on your PC, then plays sounds when the pet is clicked, dragged, becomes interactive, or when a local Codex task starts.
+
+This version currently supports Windows only. macOS and Linux are not supported yet.
 
 Highlights:
 

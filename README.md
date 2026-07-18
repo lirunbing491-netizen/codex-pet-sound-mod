@@ -2,6 +2,10 @@
 
 通用 Codex 桌宠互动音频 Mod。它不包含任何桌宠资源，也不分发 Codex 本体；用户可以继续使用自己安装到 `.codex\pets\<pet-id>` 的任意自定义桌宠。
 
+> 当前版本仅支持 Windows。macOS 和 Linux 尚未适配。
+>
+> This version currently supports Windows only. macOS and Linux are not supported yet.
+
 ## 原理
 
 安装器会基于本机已安装的 Codex 创建一个用户目录下的可写 overlay：
@@ -95,6 +99,7 @@ powershell -ExecutionPolicy Bypass -File ".\tools\install-codex-pet-sound-mod.ps
 
 ## 运行环境
 
+- Windows 版 Codex 桌面应用。当前实现依赖 WindowsApps 路径解析、Windows junction、`powershell.exe` 和 `winmm.dll PlaySound`，不能直接用于 macOS 或 Linux。
 - Windows PowerShell：`powershell.exe`
 - 已安装并能正常运行的 Codex 桌面版
 - Node.js/npm：`npx.cmd` 需要在 `PATH` 中
