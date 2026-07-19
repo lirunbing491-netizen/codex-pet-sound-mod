@@ -184,7 +184,13 @@ $sourceResources = Join-Path $CodexAppDir 'resources'
 $targetResources = Join-Path $targetApp 'resources'
 New-Item -ItemType Directory -Path $targetResources -Force | Out-Null
 Get-ChildItem -LiteralPath $sourceResources -File -Force | ForEach-Object {
-    Copy-FileFallback -Source $_.FullName -Destination (Join-Path $targetResources $_.Name)
+    $destination = Join-Path $targetResources $_.Name
+    if ($_.Name -eq 'app.asar') {
+        Copy-Item -LiteralPath $_.FullName -Destination $destination -Force
+        $fileCopyCount += 1
+    } else {
+        Copy-FileFallback -Source $_.FullName -Destination $destination
+    }
 }
 Get-ChildItem -LiteralPath $sourceResources -Directory -Force | ForEach-Object {
     Add-DirectoryReference -Source $_.FullName -Destination (Join-Path $targetResources $_.Name)
@@ -239,6 +245,7 @@ var __CODEX_PET_MARKER__=(()=>{let e=0,n=null,r=`__CODEX_PET_EVENT_LOG__`;functi
     & $npx.Source --yes '@electron/asar' pack $extractDir $newAsar
     if ($LASTEXITCODE -ne 0) { throw "asar pack failed with exit code $LASTEXITCODE" }
 
+    Remove-Item -LiteralPath $targetAsar -Force -ErrorAction SilentlyContinue
     Copy-Item -LiteralPath $newAsar -Destination $targetAsar -Force
 } finally {
     Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
