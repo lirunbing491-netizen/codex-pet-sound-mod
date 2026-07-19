@@ -302,6 +302,7 @@ Set-Content -LiteralPath $launcher -Value $launcherText -Encoding UTF8
 $launcherCmdText = @"
 @echo off
 powershell -ExecutionPolicy Bypass -File "%~dp0Start-Codex-Pet-Sound.ps1"
+if errorlevel 1 pause
 "@
 Set-Content -LiteralPath $launcherCmd -Value $launcherCmdText -Encoding ASCII
 
