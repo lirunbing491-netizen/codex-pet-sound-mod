@@ -208,7 +208,10 @@ try {
 
     $mainCandidates = Get-ChildItem -LiteralPath (Join-Path $extractDir '.vite\build') -Filter 'main-*.js' -File |
         Where-Object {
-            (Get-Content -LiteralPath $_.FullName -Raw).Contains('async handleMessage(e,t){if(PN(t))')
+            $candidateText = Get-Content -LiteralPath $_.FullName -Raw
+            $candidateText.Contains('async handleMessage(e,t){if(') -and
+                $candidateText.Contains('avatar-overlay-drag-start') -and
+                $candidateText.Contains('case`local-thread-activity-changed`')
         }
     if ($mainCandidates.Count -ne 1) {
         throw "Expected exactly one patchable main-*.js file, found $($mainCandidates.Count). This Codex version may need installer updates."
@@ -217,7 +220,7 @@ try {
 
     $mainText = Get-Content -LiteralPath $main -Raw
     if (-not $mainText.Contains($marker)) {
-        $insertBefore = 'var $X=r.a(`electron-message-handler`)'
+        $insertAnchorPattern = 'var [A-Za-z_$][A-Za-z0-9_$]*=r\.a\(`electron-message-handler`\)'
         $listenerTemplate = @'
 var __CODEX_PET_MARKER__=(()=>{let e=0,n=null,r=`__CODEX_PET_EVENT_LOG__`;function i(i){try{let a=i?.type;if(a!==`avatar-overlay-drag-start`&&a!==`avatar-overlay-drag-release`&&!(a===`avatar-overlay-pointer-interaction-changed`&&i?.isInteractive===!0)&&a!==`avatar-overlay-mascot-resize-start`&&!(a===`local-thread-activity-changed`&&i?.hasInProgressLocalConversation===!0))return;let o=Date.now();if(o-e<700)return;e=o;try{(n??=require(`fs`)).appendFile(r,`${new Date().toISOString()} play trigger type=${a}\n`,()=>{})}catch{}}catch{}}return{play:i}})();
 '@
@@ -225,16 +228,19 @@ var __CODEX_PET_MARKER__=(()=>{let e=0,n=null,r=`__CODEX_PET_EVENT_LOG__`;functi
         $listener = $listenerTemplate.
             Replace('__CODEX_PET_MARKER__', $marker).
             Replace('__CODEX_PET_EVENT_LOG__', $eventLogJs)
-        if (-not $mainText.Contains($insertBefore)) {
+        $insertAnchors = [regex]::Matches($mainText, $insertAnchorPattern)
+        if ($insertAnchors.Count -ne 1) {
             throw "Patch anchor not found in $main"
         }
-        $mainText = $mainText.Replace($insertBefore, $listener + $insertBefore)
+        $mainText = $mainText.Replace($insertAnchors[0].Value, $listener + $insertAnchors[0].Value)
 
-        $target = 'async handleMessage(e,t){if(PN(t)){await IN(this.avatarOverlayManager,e,t,t=>{this.windowManager.sendMessageToWebContents(e,t)});return}switch(t.type)'
-        $replacement = 'async handleMessage(e,t){CODEX_PET_SOUND_LISTENER_V1.play(t);if(PN(t)){await IN(this.avatarOverlayManager,e,t,t=>{this.windowManager.sendMessageToWebContents(e,t)});return}switch(t.type)'
-        if (-not $mainText.Contains($target)) {
+        $targetPattern = 'async handleMessage\(e,t\)\{if\([A-Za-z_$][A-Za-z0-9_$]*\(t\)\)\{await [A-Za-z_$][A-Za-z0-9_$]*\(this\.avatarOverlayManager,e,t,t=>\{this\.windowManager\.sendMessageToWebContents\(e,t\)\}\);return\}switch\(t\.type\)'
+        $patchTargets = [regex]::Matches($mainText, $targetPattern)
+        if ($patchTargets.Count -ne 1) {
             throw "Patch target not found in $main"
         }
+        $target = $patchTargets[0].Value
+        $replacement = $target.Replace('async handleMessage(e,t){', "async handleMessage(e,t){$marker.play(t);")
         $mainText = $mainText.Replace($target, $replacement)
         Set-Content -LiteralPath $main -Value $mainText -NoNewline -Encoding UTF8
     }
